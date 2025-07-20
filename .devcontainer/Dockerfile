@@ -57,15 +57,6 @@ ENV PATH=$PATH:/usr/local/share/npm-global/bin
 # Set the default shell to sh
 ENV SHELL=/bin/sh
 
-# Default powerline10k theme
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.2.0/zsh-in-docker.sh)" -- \
-  -p git \
-  -p fzf \
-  -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
-  -a "source /usr/share/doc/fzf/examples/completion.zsh" \
-  -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
-  -x
-
 # Install Claude
 RUN npm install -g @anthropic-ai/claude-code
 
