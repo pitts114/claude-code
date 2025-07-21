@@ -28,9 +28,6 @@
           "bash": {
             "path": "bash",
             "icon": "terminal-bash"
-          },
-          "zsh": {
-            "path": "zsh"
           }
         }
       }
