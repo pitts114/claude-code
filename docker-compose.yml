@@ -30,7 +30,7 @@ services:
       - POWERLEVEL9K_DISABLE_GITSTATUS=true
       # GitHub authentication token for Git and CLI (set via .env file or environment)
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-    command: bash
+    command: sh -c "setup-github-auth.sh && exec bash"
     stdin_open: true
     tty: true
     restart: unless-stopped
