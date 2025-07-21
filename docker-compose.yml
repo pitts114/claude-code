@@ -28,6 +28,8 @@ services:
       - NODE_OPTIONS=--max-old-space-size=4096
       - CLAUDE_CONFIG_DIR=/home/ubuntu/.claude
       - POWERLEVEL9K_DISABLE_GITSTATUS=true
+      # GitHub authentication token for Git and CLI (set via .env file or environment)
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
     command: bash
     stdin_open: true
     tty: true
