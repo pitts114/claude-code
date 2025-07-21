@@ -127,7 +127,7 @@ gh project item-edit --project-id PVT_kwHOATGsKs4A-OnP --id PVTI_lAHOATGsKs4A-On
 # Step 4: Repeat steps 3a-3b for each additional project the issue belongs to
 # Example: If also on "Arbius Command Center" project (number 1, ID PVT_kwHOATGsKs4A9RTZ)
 
-# 4a: Get item ID for this issue in the "Arbius Command Center" project  
+# 4a: Get item ID for this issue in the "Arbius Command Center" project
 gh project item-list 1 --owner pitts114 --format json | jq -r ".items[] | select(.content.number == 123) | .id"
 
 # 4b: Update to "In Progress" in that project (get field/option IDs for that project first)
@@ -150,7 +150,7 @@ gh project field-list PROJECT_NUMBER --owner pitts114 --format json | jq '.field
 # Example: Get "In Review" option ID for "users service" project (number 2)
 gh project field-list 2 --owner pitts114 --format json | jq '.fields[] | select(.name == "Status") | .options[] | select(.name == "In Review") | .id'
 
-# Example: Get "In Progress" option ID for "Arbius Command Center" project (number 1)  
+# Example: Get "In Progress" option ID for "Arbius Command Center" project (number 1)
 gh project field-list 1 --owner pitts114 --format json | jq '.fields[] | select(.name == "Status") | .options[] | select(.name == "In Progress") | .id'
 ```
 
@@ -234,7 +234,7 @@ fi
 **❌ NEVER SEPARATE IMPLEMENTATION AND TESTS INTO DIFFERENT COMMITS**
 
 **✅ CORRECT PATTERN - Implementation + Tests in Same Commit:**
-- Model + Model Tests = 1 commit  
+- Model + Model Tests = 1 commit
 - Controller + Controller Tests = 1 commit
 - Component + Component Tests = 1 commit
 - Service + Service Tests = 1 commit
@@ -267,7 +267,7 @@ fi
    - [ ] **⚠️ CRITICAL**: Migration + Model + Model Tests = 1 commit (never separate)
 
 2. **Model Logic & Relationships WITH Tests (SINGLE COMMIT)**
-   - [ ] Add associations and scopes  
+   - [ ] Add associations and scopes
    - [ ] Implement business logic methods
    - [ ] Add model callbacks for Kafka events
    - [ ] **IMMEDIATELY update and expand model tests** (same commit as logic changes)
@@ -454,7 +454,7 @@ fi
 
 **📋 SPECIFIC REQUIREMENTS:**
 - [ ] **Model changes**: Model + Model Tests = 1 commit
-- [ ] **Controller changes**: Controller + Controller Tests = 1 commit  
+- [ ] **Controller changes**: Controller + Controller Tests = 1 commit
 - [ ] **Component changes**: Component + Component Tests = 1 commit
 - [ ] **Service changes**: Service + Service Tests = 1 commit
 - [ ] **API changes**: API code + API Tests = 1 commit
@@ -489,26 +489,26 @@ fi
   ```bash
   # Step 1: Review commit history to understand what was implemented
   git log --oneline feature/issue-123-users-profile-validation
-  
+
   # Step 2: Create PR with simple, clear title (examples below)
   # Instead of: "feat(users): add profile validation for issue #123"
   # Use simple titles like:
-  
+
   # For user profile features:
   gh pr create --title "Create UserProfile model" --body "Closes #123"
-  
+
   # For authentication features:
   gh pr create --title "Add JWT refresh tokens" --body "Closes #124"
-  
+
   # For notification features:
   gh pr create --title "Add notification preferences" --body "Closes #125"
-  
+
   # For bug fixes:
   gh pr create --title "Fix user session persistence" --body "Closes #126"
-  
+
   # For performance improvements:
   gh pr create --title "Optimize user profile queries" --body "Closes #127"
-  
+
   # For UI/UX changes:
   gh pr create --title "Redesign settings page" --body "Closes #128"
   ```
@@ -540,7 +540,7 @@ fi
 6. **Aim for brevity**: 2-4 words ideal, under 50 characters maximum
 
 **💡 Where to put technical details:**
-- **Title**: "Create UserProfile model"  
+- **Title**: "Create UserProfile model"
 - **Description**: "Creates UserProfile model with UUID primary key, email/phone validations, and event publishing callbacks. Includes comprehensive test coverage for all validations and business logic."
 
 **Simple Examples by Service:**
@@ -554,25 +554,25 @@ fi
   ```bash
   # Step 1: Check which projects this issue belongs to (same as during setup)
   gh issue view 123 --repo pitts114/microservices-demo --json projectItems
-  
+
   # Step 2: For each project the issue is on, update status to "In Review"
   # Example: If issue is on "users service" project (number 2)
-  
+
   # 2a: Get the item ID for this issue in "users service" project
   gh project item-list 2 --owner pitts114 --format json | jq -r ".items[] | select(.content.number == 123) | .id"
-  
+
   # 2b: Get "In Review" option ID for "users service" project (if not known)
   gh project field-list 2 --owner pitts114 --format json | jq '.fields[] | select(.name == "Status") | .options[] | select(.name == "In Review") | .id'
-  
+
   # 2c: Update to "In Review" status (paste actual IDs from 2a and 2b)
   gh project item-edit --project-id PVT_kwHOATGsKs4A-OnP --id PVTI_lAHOATGsKs4A-OnPzgcvkiU --field-id PVTSSF_lAHOATGsKs4A-OnPzgxsgik --single-select-option-id be68dd99
-  
+
   # Step 3: Repeat 2a-2c for each additional project the issue belongs to
   # Example: If also on "Arbius Command Center" project (number 1)
-  
+
   # 3a: Get item ID for "Arbius Command Center" project
   gh project item-list 1 --owner pitts114 --format json | jq -r ".items[] | select(.content.number == 123) | .id"
-  
+
   # 3b: Get field/option IDs for that project and update status accordingly
   ```
 - **Link PR to Issue**: Use "Closes #123" in PR body for automatic linking
@@ -615,7 +615,7 @@ This PR implements the UserProfile model with comprehensive validation..."
 # PR comments
 gh pr comment 123 --body "🤖💬 Tests are now passing. Ready for review."
 
-# Issue comments  
+# Issue comments
 gh issue comment 123 --body "🤖💬 Working on this issue. Status updated to In Progress."
 ```
 
@@ -645,7 +645,7 @@ Closes #123
 
 ## Services Affected
 - [ ] Users Service
-- [ ] Auth Service  
+- [ ] Auth Service
 - [ ] Notifications Service
 - [ ] UI (React)
 - [ ] Gateway
@@ -782,7 +782,7 @@ If project management automation fails:
 echo "Please manually move issue #123 to 'In Progress' in the project board"
 echo "Project URL: https://github.com/users/USERNAME/projects/PROJECT_NUMBER"
 
-# Linear  
+# Linear
 echo "Please update issue status to 'In Progress' in Linear"
 echo "Issue URL: https://linear.app/TEAM/issue/ISSUE_ID"
 
@@ -796,7 +796,7 @@ echo "Issue URL: $JIRA_BASE_URL/browse/$ISSUE_KEY"
 ### CLAUDE.md Requirements
 ```markdown
 ## GitHub Issue Workflow
-- **Test Commands**: 
+- **Test Commands**:
   - Users: `cd users && rails test`
   - Auth: `cd auth && rails test`
   - Notifications: `cd notifications && rails test`
@@ -842,7 +842,7 @@ export JIRA_PROJECT_KEY="PROJ"
    - Integrates with issue metadata
    - Supports custom field mapping
 
-2. **Linear** 
+2. **Linear**
    - REST API integration
    - Team-based workflow support
    - Status transition automation
@@ -885,7 +885,7 @@ curl -X POST https://api.linear.app/graphql \
   -H "Authorization: $LINEAR_API_KEY" \
   -d '{"query": "{ teams { nodes { id name states { nodes { id name } } } } }"}'
 
-# Update issue status (used in automation)  
+# Update issue status (used in automation)
 curl -X POST https://api.linear.app/graphql \
   -H "Authorization: $LINEAR_API_KEY" \
   -d '{"query": "mutation { issueUpdate(id: \"$ISSUE_ID\", input: {stateId: \"$STATE_ID\"}) { success issue { state { name } } } }"}'
@@ -1007,15 +1007,15 @@ curl -X POST "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/transitions" \
   ```bash
   # Step 1: Discover which projects this issue belongs to
   gh issue view 123 --repo pitts114/microservices-demo --json projectItems
-  
+
   # Step 2: Get project numbers/IDs
   gh project list --owner pitts114
-  
+
   # Step 3: For EACH project the issue is on, update status to "In Progress"
   # Example for "users service" project:
   gh project item-list 2 --owner pitts114 --format json | jq -r ".items[] | select(.content.number == 123) | .id"
   gh project item-edit --project-id PVT_kwHOATGsKs4A-OnP --id PVTI_lAHOATGsKs4A-OnPzgcvkiU --field-id PVTSSF_lAHOATGsKs4A-OnPzgxsgik --single-select-option-id 47fc9ee4
-  
+
   # Repeat for each additional project the issue belongs to
   ```
 - [ ] Verify status update succeeded before proceeding
