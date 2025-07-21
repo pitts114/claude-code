@@ -26,6 +26,7 @@ services:
     stdin_open: true
     tty: true
     restart: unless-stopped
+    network_mode: bridge
 
 # Using bind mounts to host directories instead of named volumes
 # Directories are created in ./volumes/${VOLUME_PREFIX}/
