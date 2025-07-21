@@ -1,0 +1,31 @@
+services:
+  claude-agent:
+    build:
+      context: .devcontainer
+      dockerfile: Dockerfile
+      args:
+        TZ: ${TZ:-America/New_York}
+    container_name: ${INSTANCE_NAME:-claude-code-agent}
+    ports:
+      - "${EXTERNAL_PORT:-3010}:3000"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      # Isolated bind mounts per instance
+      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/workspace:/workspace
+      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/bashhistory:/commandhistory
+      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/config:/home/ubuntu/.claude
+    working_dir: /workspace
+    user: ubuntu
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - CLAUDE_CONFIG_DIR=/home/ubuntu/.claude
+      - POWERLEVEL9K_DISABLE_GITSTATUS=true
+    command: bash
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+# Using bind mounts to host directories instead of named volumes
+# Directories are created in ./volumes/${VOLUME_PREFIX}/
