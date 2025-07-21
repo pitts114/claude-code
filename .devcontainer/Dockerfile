@@ -58,7 +58,7 @@ RUN apt update && apt install -y less \
 RUN useradd -m -s /bin/bash ubuntu
 
 # Ensure default ubuntu user has access to /usr/local/share
-RUN mkdir -p /usr/local/share/npm-global && \
+RUN mkdir -p /usr/local/share && \
   chown -R ubuntu:ubuntu /usr/local/share
 
 ARG USERNAME=ubuntu
@@ -97,6 +97,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | b
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
 RUN echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
 RUN echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc
+RUN echo 'export PATH="$NVM_DIR/versions/node/$(nvm current)/bin:$PATH"' >> ~/.bashrc
 
 # Install Node.js 18.20.8 via nvm
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 18.20.8 && nvm use 18.20.8 && nvm alias default 18.20.8"
@@ -116,10 +117,6 @@ RUN /bin/bash -l -c "gem install bundler rails"
 
 # Install global npm packages (following Anthropic pattern)
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && npm install -g @anthropic-ai/claude-code yarn"
-
-# Install global packages
-ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
-ENV PATH=$PATH:/usr/local/share/npm-global/bin
 
 # Set the default shell to sh
 ENV SHELL=/bin/sh
