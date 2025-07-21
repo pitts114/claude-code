@@ -92,14 +92,6 @@ RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[0
 RUN echo 'alias ls="ls --color=auto"' >> ~/.bashrc
 RUN echo 'alias grep="grep --color=auto"' >> ~/.bashrc
 
-# Configure GitHub authentication with simple URL rewriting
-RUN echo '# GitHub authentication setup' >> ~/.bashrc && \
-  echo 'if [ -n "$GITHUB_TOKEN" ]; then' >> ~/.bashrc && \
-  echo '  # Configure git to use token for all GitHub URLs' >> ~/.bashrc && \
-  echo '  git config --global url."https://\$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/" 2>/dev/null || true' >> ~/.bashrc && \
-  echo '  # Authenticate GitHub CLI' >> ~/.bashrc && \
-  echo '  echo "$GITHUB_TOKEN" | gh auth login --with-token >/dev/null 2>&1 || true' >> ~/.bashrc && \
-  echo 'fi' >> ~/.bashrc
 
 # Install nvm and Node.js 18.20.8
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
@@ -127,20 +119,23 @@ RUN /bin/bash -l -c "gem install bundler rails"
 # Install global npm packages (following Anthropic pattern)
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && npm install -g @anthropic-ai/claude-code yarn"
 
-# Configure Git basic settings
-RUN git config --global init.defaultBranch main
+# Configure Git with credential store for runtime authentication
+RUN git config --global init.defaultBranch main && \
+  git config --global credential.helper store
 
 # Set the default shell to sh
 ENV SHELL=/bin/sh
 
 # Copy and set up firewall script
-COPY init-firewall.sh /usr/local/bin/
+COPY init-firewall.sh entrypoint.sh /usr/local/bin/
 USER root
-RUN chmod +x /usr/local/bin/init-firewall.sh && \
+RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh && \
   echo "ubuntu ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/ubuntu-firewall && \
   chmod 0440 /etc/sudoers.d/ubuntu-firewall
 
 # Note: .claude configuration is now mounted as volumes in docker-compose.yml
 # This provides live updates and proper separation of commands vs runtime data
 
+# Set entrypoint for runtime GitHub authentication
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 USER ubuntu
