@@ -17,7 +17,11 @@ services:
       # Isolated bind mounts per instance
       - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/workspace:/workspace
       - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/bashhistory:/commandhistory
-      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/config:/home/ubuntu/.claude
+      # Claude commands - read-only from source
+      - ./.devcontainer/.claude/commands:/home/ubuntu/.claude/commands:ro
+      - ./.devcontainer/.claude/README.md:/home/ubuntu/.claude/README.md:ro
+      # Runtime data - isolated per instance
+      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/config:/home/ubuntu/.claude/runtime
     working_dir: /workspace
     user: ubuntu
     environment:

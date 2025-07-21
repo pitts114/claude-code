@@ -128,9 +128,7 @@ RUN chmod +x /usr/local/bin/init-firewall.sh && \
   echo "ubuntu ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/ubuntu-firewall && \
   chmod 0440 /etc/sudoers.d/ubuntu-firewall
 
-# Copy .claude configuration (near end to minimize cache invalidation)
-COPY .claude/README.md /home/ubuntu/.claude/README.md
-COPY .claude/commands/ /home/ubuntu/.claude/commands/
-RUN chown -R ubuntu:ubuntu /home/ubuntu/.claude
+# Note: .claude configuration is now mounted as volumes in docker-compose.yml
+# This provides live updates and proper separation of commands vs runtime data
 
 USER ubuntu
