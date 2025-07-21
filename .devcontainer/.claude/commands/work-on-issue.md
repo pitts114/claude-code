@@ -6,21 +6,16 @@
 
 **YOU MUST COMPLETE THESE STEPS IN ORDER:**
 
-1. **IMMEDIATELY Create Worktree and Feature Branch**
+1. **IMMEDIATELY Create and Checkout Feature Branch**
    ```bash
-   # Create worktree with new branch (replace 123, users, profile-validation with actual values)
-   mkdir -p worktrees
-   git worktree add -b feature/issue-123-users-profile-validation worktrees/issue-123-users-profile-validation
-   
-   # Change to worktree directory
-   cd worktrees/issue-123-users-profile-validation
+   # Create and checkout new branch (replace 123, users, profile-validation with actual values)
+   git checkout -b feature/issue-123-users-profile-validation
    ```
-   - Example worktree: `worktrees/issue-123-users-profile-validation/`
    - Example branch: `feature/issue-123-users-profile-validation`
 
-2. **CONFIRM Worktree Setup**
-   - Run `pwd && git branch --show-current` to verify you're in worktree on feature branch
-   - DO NOT proceed if worktree creation failed
+2. **CONFIRM Branch Setup**
+   - Run `git branch --show-current` to verify you're on the feature branch
+   - DO NOT proceed if branch creation failed
    - DO NOT work on master/main branch
 
 3. **Plan Your Commit Strategy**
@@ -182,61 +177,57 @@ Based on issue content and labels, determine affected services:
   - Linting: `rubocop`, `npm run lint`
   - Type checking: `npm run type-check`
 
-### 5. Branch Strategy with Git Worktrees
-Create isolated working directory for parallel development using git worktrees:
+### 5. Branch Strategy
+Create feature branch for isolated development:
 
 ```bash
-# Create worktree with new branch (replace 123, users, profile-validation with actual values)
-mkdir -p worktrees
-git worktree add -b feature/issue-123-users-profile-validation worktrees/issue-123-users-profile-validation
-
-# Change to worktree directory for ALL subsequent development work
-cd worktrees/issue-123-users-profile-validation
+# Create and checkout new branch (replace 123, users, profile-validation with actual values)
+git checkout -b feature/issue-123-users-profile-validation
 
 # Verify setup
-pwd && git branch --show-current
+git branch --show-current
 ```
 
 **Important: `-b` Flag Explained:**
-- **`-b flag`**: Creates a new branch AND worktree in one command
+- **`-b flag`**: Creates a new branch AND checks it out in one command
 - **Without `-b`**: Git expects the branch to already exist (causes "fatal: invalid reference" error)
 - **Starting Point**: New branch is created from current HEAD (typically master/main)
 - **Safe Creation**: Prevents the common error of trying to checkout non-existent branches
 
-**Worktree Benefits:**
-- **Parallel Development**: Multiple agents can work on different issues simultaneously
-- **Clean Isolation**: Each issue has its own complete working directory
-- **No Context Switching**: No need to stash/unstash changes between issues
-- **Safe Experimentation**: Original repo directory remains untouched
+**Branch Benefits:**
+- **Clean Isolation**: Each issue has its own dedicated branch
+- **No Context Switching**: Work stays isolated to the feature branch
+- **Safe Experimentation**: Main branch remains untouched
+- **Container Isolation**: Since we're working in a container, there's no need for multiple working directories
 
 **Examples:**
-- `worktrees/issue-123-users-profile-validation/`
-- `worktrees/issue-124-auth-jwt-refresh/`
-- `worktrees/issue-125-ui-notification-settings/`
+- `feature/issue-123-users-profile-validation`
+- `feature/issue-124-auth-jwt-refresh`
+- `feature/issue-125-ui-notification-settings`
 
 **Error Handling:**
 ```bash
-# Handle existing worktree collision by adding timestamp
-if [ -d "worktrees/issue-123-users-profile-validation" ]; then
-    git worktree add -b feature/issue-123-users-profile-validation worktrees/issue-123-users-profile-validation-$(date +%s)
+# Handle existing branch by adding timestamp
+if git show-ref --verify --quiet refs/heads/feature/issue-123-users-profile-validation; then
+    git checkout -b feature/issue-123-users-profile-validation-$(date +%s)
 else
-    git worktree add -b feature/issue-123-users-profile-validation worktrees/issue-123-users-profile-validation
+    git checkout -b feature/issue-123-users-profile-validation
 fi
 
-# STOP if worktree creation fails - do not fallback
+# STOP if branch creation fails
 if [ $? -ne 0 ]; then
-    echo "❌ FATAL: Worktree creation failed. Cannot proceed safely."
-    echo "Multiple agents working on regular branches would conflict."
+    echo "❌ FATAL: Branch creation failed. Cannot proceed safely."
+    echo "Check if you have uncommitted changes or branch name conflicts."
     exit 1
 fi
 ```
 
 - **Note**: Status was already updated to "In Progress" in Step 2
-- **Important**: ALL development work must happen in the worktree directory
+- **Important**: ALL development work must happen on the feature branch
 
 ### 6. Development Workflow (Bottom-Up Approach)
 
-**🔧 WORKTREE DEVELOPMENT**: All development commands below assume you are working in the worktree directory created in Step 5. Commands like `cd users && rails test` will work exactly the same since each worktree is a complete repository copy.
+**🔧 BRANCH DEVELOPMENT**: All development commands below assume you are working on the feature branch created in Step 5. Commands like `cd users && rails test` will work exactly the same since you're in the same repository.
 
 ## 🚨 CRITICAL: TESTS AND IMPLEMENTATION MUST BE COMMITTED TOGETHER
 
@@ -587,26 +578,25 @@ fi
 - **Link PR to Issue**: Use "Closes #123" in PR body for automatic linking
 - **Verification**: `gh pr view` to confirm PR creation and check project status
 
-#### Worktree Management After PR Creation
-**⚠️ DO NOT automatically clean up the worktree after PR creation**
+#### Branch Management After PR Creation
+**⚠️ DO NOT automatically delete the feature branch after PR creation**
 
-The worktree should remain available for:
+The feature branch should remain available for:
 - **PR Feedback**: Address review comments and suggestions
 - **Additional Changes**: Manual edits or improvements
 - **Testing**: Verify changes work as expected
 - **Iterative Development**: Make follow-up commits
 
-#### Manual Worktree Cleanup (When PR is merged/closed)
-Only clean up worktrees when completely done with the issue:
+#### Manual Branch Cleanup (When PR is merged/closed)
+Only clean up branches when completely done with the issue:
 
 ```bash
 # Manual cleanup after PR is merged and no more changes needed
-cd ../../  # Return to main repository
-git worktree remove worktrees/issue-123-users-profile
-git worktree prune
+git checkout main  # Return to main branch
+git branch -d feature/issue-123-users-profile-validation
 
 # Or force cleanup if needed
-git worktree remove --force worktrees/issue-123-users-profile
+git branch -D feature/issue-123-users-profile-validation
 ```
 
 ### 10. GitHub Comment Formatting (MANDATORY)
@@ -698,9 +688,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - **Project Management API Failures**: Handle status update failures gracefully
 - **Authentication Issues**: Missing or invalid API tokens for project tools
 - **Permission Errors**: Insufficient permissions to update issue status
-- **Worktree Creation Failures**: Handle disk space, path conflicts, or git errors
-- **Worktree Path Collisions**: Multiple agents working on same issue number
-- **Stale Worktree References**: Cleanup after forced removals or system crashes
+- **Branch Creation Failures**: Handle naming conflicts or git errors
+- **Branch Name Collisions**: Multiple attempts to create same branch name
+- **Stale Branch References**: Cleanup after forced removals or conflicts
 
 ### Recovery Strategies
 - Rollback to previous commit if tests fail
@@ -708,46 +698,46 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Retry with different approach if implementation fails
 - Create sub-issues for complex problems
 
-#### Worktree-Specific Error Recovery
+#### Branch-Specific Error Recovery
 
-**Worktree Creation Failures - STOP EXECUTION:**
+**Branch Creation Failures - STOP EXECUTION:**
 ```bash
-# If worktree creation fails, DO NOT proceed with development
-if ! git worktree add $WORKTREE_PATH $BRANCH_NAME; then
-    echo "❌ FATAL: Worktree creation failed. Cannot proceed safely."
-    echo "Multiple agents working on regular branches would conflict."
+# If branch creation fails, DO NOT proceed with development
+if ! git checkout -b $BRANCH_NAME; then
+    echo "❌ FATAL: Branch creation failed. Cannot proceed safely."
+    echo "Check for uncommitted changes or naming conflicts."
     echo ""
     echo "Required actions:"
-    echo "1. Check available disk space: df -h"
-    echo "2. Remove unused worktrees: git worktree list && git worktree remove <path>"
-    echo "3. Check for path conflicts: ls -la worktrees/"
-    echo "4. Retry worktree creation after resolving issues"
+    echo "1. Check git status: git status"
+    echo "2. Stash uncommitted changes: git stash"
+    echo "3. Check existing branches: git branch -a"
+    echo "4. Retry branch creation after resolving issues"
     exit 1
 fi
 ```
 
-**Path Collision Resolution:**
+**Branch Name Collision Resolution:**
 ```bash
-# Handle existing worktree directory with unique suffix
-if [ -d "$WORKTREE_PATH" ]; then
-    WORKTREE_PATH="${WORKTREE_PATH}-$(date +%s)"
-    echo "Directory collision, using unique path: $WORKTREE_PATH"
+# Handle existing branch with unique suffix
+if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
+    BRANCH_NAME="${BRANCH_NAME}-$(date +%s)"
+    echo "Branch collision, using unique name: $BRANCH_NAME"
 fi
 ```
 
-**Stale Worktree Cleanup:**
+**Stale Branch Cleanup:**
 ```bash
-# Clean up corrupted worktree references before creating new ones
-git worktree prune
+# Clean up old feature branches before creating new ones
+git branch -D $(git branch | grep "feature/issue-" | head -5) 2>/dev/null || true
 
-# Remove orphaned worktree directories
-find worktrees/ -maxdepth 1 -type d -name "issue-*" -exec git worktree remove {} \; 2>/dev/null || true
+# Remove remote tracking branches that no longer exist
+git remote prune origin
 ```
 
 **Prerequisites Check:**
-- **Disk Space**: Ensure at least 2GB available (worktrees duplicate repository)
-- **Git Version**: Requires Git 2.5+ for worktree support
-- **Directory Permissions**: Write access to create worktrees/ directory
+- **Git Status**: Ensure working directory is clean
+- **Git Version**: Standard git checkout functionality
+- **Repository State**: No uncommitted changes blocking branch creation
 
 ### Project Management Error Handling
 - **API Token Validation**: Check token validity before attempting status updates
@@ -1029,13 +1019,11 @@ curl -X POST "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/transitions" \
   # Repeat for each additional project the issue belongs to
   ```
 - [ ] Verify status update succeeded before proceeding
-- [ ] Create worktree with new branch (replace 123, users, profile-validation with actual values):
+- [ ] Create and checkout feature branch (replace 123, users, profile-validation with actual values):
   ```bash
-  mkdir -p worktrees
-  git worktree add -b feature/issue-123-users-profile-validation worktrees/issue-123-users-profile-validation
-  cd worktrees/issue-123-users-profile-validation
+  git checkout -b feature/issue-123-users-profile-validation
   ```
-- [ ] Confirm you're in worktree on feature branch (not master/main)
+- [ ] Confirm you're on feature branch (not master/main)
 - [ ] Understand the issue requirements completely
 
 ### Phase 2: Development (REQUIRED)
@@ -1069,10 +1057,10 @@ curl -X POST "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/transitions" \
 **❌ NEVER:**
 - Work directly on master/main branch
 - Commit failing tests
-- Skip the worktree creation step
-- Fall back to regular branch workflow if worktree creation fails
+- Skip the feature branch creation step
+- Work directly on master/main without creating a feature branch
 - Use incorrect commit message format
 - Create commits without tests
-- Work outside the worktree directory
+- Work on master/main instead of the feature branch
 
 This workflow ensures consistent, high-quality implementations that follow the project's microservices architecture and maintain code quality standards.
