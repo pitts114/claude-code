@@ -5,27 +5,17 @@
 
 set -e
 
-# Function to setup GitHub authentication
+# Function to setup GitHub authentication using official GitHub CLI method
 setup_github_auth() {
     echo "🔧 Setting up GitHub authentication..." >&2
     
-    # Get GitHub username via API
-    GITHUB_USER=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user 2>/dev/null | jq -r '.login' 2>/dev/null)
-    
-    # Validate username
-    if [ -z "$GITHUB_USER" ] || [ "$GITHUB_USER" = "null" ]; then
-        echo "⚠️  Warning: Could not retrieve GitHub username. Check GITHUB_TOKEN validity." >&2
-        return 1
-    fi
-    
-    # Create git credentials file
-    echo "https://$GITHUB_USER:$GITHUB_TOKEN@github.com" > ~/.git-credentials
-    chmod 600 ~/.git-credentials
-    
-    # Setup GitHub CLI authentication
+    # Authenticate GitHub CLI with token
     echo "$GITHUB_TOKEN" | gh auth login --with-token >/dev/null 2>&1
     
-    echo "✅ GitHub authentication configured for user: $GITHUB_USER" >&2
+    # Configure git to use GitHub CLI authentication
+    gh auth setup-git >/dev/null 2>&1
+    
+    echo "✅ GitHub authentication configured" >&2
     return 0
 }
 
