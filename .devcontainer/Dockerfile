@@ -20,7 +20,6 @@ RUN apt update && apt install -y less \
   curl \
   man-db \
   unzip \
-  gnupg2 \
   gh \
   iptables \
   ipset \
@@ -61,13 +60,11 @@ RUN useradd -m -s /bin/bash ubuntu
 RUN mkdir -p /usr/local/share && \
   chown -R ubuntu:ubuntu /usr/local/share
 
-ARG USERNAME=ubuntu
-
 # Persist bash history.
 RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
   && mkdir /commandhistory \
   && touch /commandhistory/.bash_history \
-  && chown -R $USERNAME /commandhistory
+  && chown -R ubuntu:ubuntu /commandhistory
 
 # Set `DEVCONTAINER` environment variable to help with orientation
 ENV DEVCONTAINER=true
@@ -88,17 +85,17 @@ RUN ARCH=$(dpkg --print-architecture) && \
 USER ubuntu
 
 # Configure bash with better prompt and colors
-RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> ~/.bashrc
-RUN echo 'alias ls="ls --color=auto"' >> ~/.bashrc
-RUN echo 'alias grep="grep --color=auto"' >> ~/.bashrc
+RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> ~/.bashrc && \
+  echo 'alias ls="ls --color=auto"' >> ~/.bashrc && \
+  echo 'alias grep="grep --color=auto"' >> ~/.bashrc
 
 
 # Install nvm and Node.js 18.20.8
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
-RUN echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
-RUN echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc
-RUN echo 'export PATH="$NVM_DIR/versions/node/$(nvm current)/bin:$PATH"' >> ~/.bashrc
+RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc && \
+  echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc && \
+  echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc && \
+  echo 'export PATH="$NVM_DIR/versions/node/$(nvm current)/bin:$PATH"' >> ~/.bashrc
 
 # Install Node.js 18.20.8 via nvm
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 18.20.8 && nvm use 18.20.8 && nvm alias default 18.20.8"
@@ -119,10 +116,8 @@ RUN /bin/bash -l -c "gem install bundler rails"
 # Install global npm packages (following Anthropic pattern)
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && npm install -g @anthropic-ai/claude-code yarn"
 
-# Configure Git with credential store for runtime authentication
-RUN git config --global init.defaultBranch main && \
-  git config --global credential.helper store
-
+# Configure Git basic settings (authentication handled by gh auth setup-git)
+RUN git config --global init.defaultBranch main
 # Set the default shell to sh
 ENV SHELL=/bin/sh
 
