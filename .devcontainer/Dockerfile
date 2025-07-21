@@ -46,6 +46,7 @@ RUN apt update && apt install -y less \
   libbz2-dev \
   # PostgreSQL client
   postgresql-client \
+  libpq-dev \
   # Redis client
   redis-tools \
   # Additional dev tools
@@ -84,10 +85,24 @@ RUN ARCH=$(dpkg --print-architecture) && \
 # Set up non-root user
 USER ubuntu
 
+# Install rvm and Ruby 3.4.4 (early for better Docker layer caching)
+RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+RUN curl -sSL https://get.rvm.io  < /dev/null |  bash -s stable
+
+# Source rvm in shell profiles
+RUN echo 'source ~/.rvm/scripts/rvm' >> ~/.bashrc
+
+# Install Ruby 3.4.4 via rvm (disable autolibs to skip system requirements)
+RUN /bin/bash -l -c "rvm install 3.4.4 --disable-binary --autolibs=disable && rvm use 3.4.4 --default"
+
+# Install global Ruby gems
+RUN /bin/bash -l -c "gem install bundler rails"
+
 # Configure bash with better prompt and colors
 RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> ~/.bashrc && \
   echo 'alias ls="ls --color=auto"' >> ~/.bashrc && \
-  echo 'alias grep="grep --color=auto"' >> ~/.bashrc
+  echo 'alias grep="grep --color=auto"' >> ~/.bashrc && \
+  echo 'alias cld="claude --dangerously-skip-permissions"' >> ~/.bashrc
 
 
 # Install nvm and Node.js 18.20.8
@@ -99,19 +114,6 @@ RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc && \
 
 # Install Node.js 18.20.8 via nvm
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 18.20.8 && nvm use 18.20.8 && nvm alias default 18.20.8"
-
-# Install rvm and Ruby 3.4.4
-RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-RUN curl -sSL https://get.rvm.io | bash -s stable
-
-# Source rvm in shell profiles
-RUN echo 'source ~/.rvm/scripts/rvm' >> ~/.bashrc
-
-# Install Ruby 3.4.4 via rvm (disable autolibs to skip system requirements)
-RUN /bin/bash -l -c "rvm install 3.4.4 --disable-binary --autolibs=disable && rvm use 3.4.4 --default"
-
-# Install global Ruby gems
-RUN /bin/bash -l -c "gem install bundler rails"
 
 # Install global npm packages (following Anthropic pattern)
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && npm install -g @anthropic-ai/claude-code yarn"
