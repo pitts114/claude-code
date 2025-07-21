@@ -8,6 +8,8 @@ services:
     container_name: ${INSTANCE_NAME:-claude-code-agent}
     ports:
       - "${EXTERNAL_PORT:-3010}:3000"
+      - "${POSTGRES_PORT:-5432}:5432"
+      - "${REDIS_PORT:-6379}:6379"
     cap_add:
       - NET_ADMIN
       - NET_RAW

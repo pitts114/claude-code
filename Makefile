@@ -3,8 +3,10 @@
 # Default agent ID if not provided
 ID ?= 1
 
-# Calculate port: 3000 + 10 * ID
+# Calculate ports based on agent ID
 EXTERNAL_PORT = $(shell echo $$((3000 + 10 * $(ID))))
+POSTGRES_PORT = $(shell echo $$((5432 + 10 * $(ID))))
+REDIS_PORT = $(shell echo $$((6379 + 10 * $(ID))))
 INSTANCE_NAME = claude-code-agent-$(ID)
 VOLUME_PREFIX = claude-code-agent-$(ID)
 
@@ -23,9 +25,12 @@ help:
 	@echo "  make cleanup-all                - Stop containers and remove volumes"
 	@echo "  make build                      - Build the base Docker image"
 	@echo ""
+	@echo "Port mappings per agent:"
+	@echo "  HTTP: 3000 + 10 * ID  |  PostgreSQL: 5432 + 10 * ID  |  Redis: 6379 + 10 * ID"
+	@echo ""
 	@echo "Examples:"
-	@echo "  make start-agent ID=1          - Starts agent 1 on port 3010"
-	@echo "  make start-agent ID=5          - Starts agent 5 on port 3050"
+	@echo "  make start-agent ID=1          - Agent 1: HTTP 3010, PostgreSQL 5442, Redis 6389"
+	@echo "  make start-agent ID=5          - Agent 5: HTTP 3050, PostgreSQL 5482, Redis 6429"
 	@echo "  make shell-agent ID=1          - Opens bash in agent 1"
 
 start-agent:
@@ -35,6 +40,8 @@ start-agent:
 	@mkdir -p ./volumes/$(VOLUME_PREFIX)/config
 	@echo "Starting Claude Code Agent $(ID) on port $(EXTERNAL_PORT)..."
 	@EXTERNAL_PORT=$(EXTERNAL_PORT) \
+	 POSTGRES_PORT=$(POSTGRES_PORT) \
+	 REDIS_PORT=$(REDIS_PORT) \
 	 INSTANCE_NAME=$(INSTANCE_NAME) \
 	 VOLUME_PREFIX=$(VOLUME_PREFIX) \
 	 docker compose up -d
@@ -44,13 +51,17 @@ start-agent:
 	@docker exec $(INSTANCE_NAME) sudo /usr/local/bin/init-firewall.sh
 	@echo "Agent $(ID) started successfully!"
 	@echo "  - Container: $(INSTANCE_NAME)"
-	@echo "  - Port mapping: $(EXTERNAL_PORT):3000"
+	@echo "  - HTTP port: $(EXTERNAL_PORT):3000"
+	@echo "  - PostgreSQL port: $(POSTGRES_PORT):5432"
+	@echo "  - Redis port: $(REDIS_PORT):6379"
 	@echo "  - Directories: ./volumes/$(VOLUME_PREFIX)/{workspace,bashhistory,config}"
 	@echo "  - Connect with: make shell-agent ID=$(ID)"
 
 stop-agent:
 	@echo "Stopping Claude Code Agent $(ID)..."
 	@EXTERNAL_PORT=$(EXTERNAL_PORT) \
+	 POSTGRES_PORT=$(POSTGRES_PORT) \
+	 REDIS_PORT=$(REDIS_PORT) \
 	 INSTANCE_NAME=$(INSTANCE_NAME) \
 	 VOLUME_PREFIX=$(VOLUME_PREFIX) \
 	 docker compose down
