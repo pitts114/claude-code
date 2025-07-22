@@ -1,9 +1,3 @@
-# Pre-cache Docker images using multi-stage build (forces Docker to download them)
-FROM postgres:17 AS postgres-cache
-FROM redis:7-alpine AS redis-cache
-FROM confluentinc/cp-kafka:7.4.0 AS kafka-cache
-FROM confluentinc/cp-zookeeper:7.2.15 AS zookeeper-cache
-
 # Main build stage
 FROM ubuntu:22.04
 
