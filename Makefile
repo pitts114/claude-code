@@ -72,6 +72,10 @@ shell-agent:
 	@echo "Opening shell in Claude Code Agent $(ID)..."
 	@docker exec -it $(INSTANCE_NAME) bash
 
+shell-root-agent:
+	@echo "Opening shell in Claude Code Agent $(ID)..."
+	@docker exec -it -u root $(INSTANCE_NAME) bash
+
 logs-agent:
 	@echo "Showing logs for Claude Code Agent $(ID)..."
 	@docker logs -f $(INSTANCE_NAME)
