@@ -18,6 +18,7 @@
         "eamodio.gitlens"
       ],
       "settings": {
+        "dev.containers.dockerCredentialHelper": false,
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.codeActionsOnSave": {
