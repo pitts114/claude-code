@@ -19,9 +19,7 @@ services:
       # Runtime data - isolated per instance
       - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/config:/home/ubuntu/.claude/runtime
       # Per-instance persistent Claude authentication
-      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/claude-auth:/home/ubuntu/.config/claude
-      # Docker-in-Docker data persistence
-      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/docker-data:/var/lib/docker
+      - ./volumes/claude:/home/ubuntu/.claude
     working_dir: /workspace
     user: ubuntu
     environment:
@@ -38,6 +36,3 @@ services:
     restart: unless-stopped
     network_mode: bridge
     privileged: true
-
-# Using bind mounts to host directories instead of named volumes
-# Directories are created in ./volumes/${VOLUME_PREFIX}/
