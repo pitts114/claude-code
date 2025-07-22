@@ -9,6 +9,7 @@ POSTGRES_PORT = $(shell echo $$((5432 + 10 * $(ID))))
 REDIS_PORT = $(shell echo $$((6379 + 10 * $(ID))))
 INSTANCE_NAME = claude-code-agent-$(ID)
 VOLUME_PREFIX = claude-code-agent-$(ID)
+ENV_FILE = .env.$(ID)
 
 # Default target
 help:
@@ -25,6 +26,10 @@ help:
 	@echo "  make cleanup-all                - Stop containers and remove volumes"
 	@echo "  make build                      - Build the base Docker image"
 	@echo ""
+	@echo "Environment files:"
+	@echo "  Each agent uses .env.<ID> (e.g., .env.1, .env.2)"
+	@echo "  If .env.<ID> doesn't exist, it's created from .env"
+	@echo ""
 	@echo "Port mappings per agent:"
 	@echo "  HTTP: 3000 + 10 * ID  |  PostgreSQL: 5432 + 10 * ID  |  Redis: 6379 + 10 * ID"
 	@echo ""
@@ -39,13 +44,17 @@ start-agent:
 	@mkdir -p ./volumes/$(VOLUME_PREFIX)/bashhistory
 	@mkdir -p ./volumes/$(VOLUME_PREFIX)/config
 	@mkdir -p ./volumes/$(VOLUME_PREFIX)/docker-data
-	@echo "Starting Claude Code Agent $(ID) on port $(EXTERNAL_PORT)..."
+	@if [ ! -f $(ENV_FILE) ]; then \
+		echo "Warning: $(ENV_FILE) not found, creating from .env template..."; \
+		cp .env $(ENV_FILE) 2>/dev/null || touch $(ENV_FILE); \
+	fi
+	@echo "Starting Claude Code Agent $(ID) on port $(EXTERNAL_PORT) with $(ENV_FILE)..."
 	@EXTERNAL_PORT=$(EXTERNAL_PORT) \
 	 POSTGRES_PORT=$(POSTGRES_PORT) \
 	 REDIS_PORT=$(REDIS_PORT) \
 	 INSTANCE_NAME=$(INSTANCE_NAME) \
 	 VOLUME_PREFIX=$(VOLUME_PREFIX) \
-	 docker compose -p "claude-agent-$(ID)" up -d
+	 docker compose --env-file $(ENV_FILE) -p "claude-agent-$(ID)" up -d
 	@echo "Waiting for container to be ready..."
 	@until docker exec $(INSTANCE_NAME) echo "ready" 2>/dev/null; do sleep 1; done
 	@echo "Initializing firewall for Agent $(ID)..."
@@ -65,7 +74,7 @@ stop-agent:
 	 REDIS_PORT=$(REDIS_PORT) \
 	 INSTANCE_NAME=$(INSTANCE_NAME) \
 	 VOLUME_PREFIX=$(VOLUME_PREFIX) \
-	 docker compose -p "claude-agent-$(ID)" down
+	 docker compose --env-file $(ENV_FILE) -p "claude-agent-$(ID)" down
 	@echo "Agent $(ID) stopped successfully!"
 
 shell-agent:
