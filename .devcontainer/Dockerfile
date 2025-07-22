@@ -1,4 +1,13 @@
-# Main build stage
+# Ruby build stage - pre-compile Ruby with RVM for faster builds
+FROM ruby:3.4 as ruby-builder
+
+# Install RVM and Ruby 3.4.4 in the Ruby image
+RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+RUN curl -sSL https://get.rvm.io | bash -s stable
+RUN /bin/bash -l -c "source /etc/profile.d/rvm.sh && rvm install 3.4.4 && rvm use 3.4.4 --default"
+RUN /bin/bash -l -c "source /etc/profile.d/rvm.sh && gem install bundler rails"
+
+# Main Ubuntu build stage
 FROM ubuntu:22.04
 
 ARG TZ
@@ -107,18 +116,13 @@ USER ubuntu
 # Install rootless Docker setup
 RUN dockerd-rootless-setuptool.sh install --skip-iptables --force
 
-# Install rvm and Ruby 3.4.4 (early for better Docker layer caching)
-RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-RUN curl -sSL https://get.rvm.io  < /dev/null |  bash -s stable
+# Copy pre-built RVM and Ruby installation from build stage (much faster than compiling)
+COPY --from=ruby-builder /usr/local/rvm /usr/local/rvm
+COPY --from=ruby-builder /etc/profile.d/rvm.sh /etc/profile.d/rvm.sh
 
-# Source rvm in shell profiles
-RUN echo 'source ~/.rvm/scripts/rvm' >> ~/.bashrc
-
-# Install Ruby 3.4.4 via rvm (disable autolibs to skip system requirements)
-RUN /bin/bash -l -c "rvm install 3.4.4 --disable-binary --autolibs=disable && rvm use 3.4.4 --default"
-
-# Install global Ruby gems
-RUN /bin/bash -l -c "gem install bundler rails"
+# Set up RVM for ubuntu user
+RUN echo 'source /usr/local/rvm/scripts/rvm' >> ~/.bashrc && \
+    echo 'export PATH="$PATH:/usr/local/rvm/bin"' >> ~/.bashrc
 
 # Configure bash with better prompt and colors
 RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> ~/.bashrc && \
