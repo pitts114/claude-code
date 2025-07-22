@@ -38,6 +38,7 @@ start-agent:
 	@mkdir -p ./volumes/$(VOLUME_PREFIX)/workspace
 	@mkdir -p ./volumes/$(VOLUME_PREFIX)/bashhistory
 	@mkdir -p ./volumes/$(VOLUME_PREFIX)/config
+	@mkdir -p ./volumes/$(VOLUME_PREFIX)/docker-data
 	@echo "Starting Claude Code Agent $(ID) on port $(EXTERNAL_PORT)..."
 	@EXTERNAL_PORT=$(EXTERNAL_PORT) \
 	 POSTGRES_PORT=$(POSTGRES_PORT) \
@@ -54,7 +55,7 @@ start-agent:
 	@echo "  - HTTP port: $(EXTERNAL_PORT):3000"
 	@echo "  - PostgreSQL port: $(POSTGRES_PORT):5432"
 	@echo "  - Redis port: $(REDIS_PORT):6379"
-	@echo "  - Directories: ./volumes/$(VOLUME_PREFIX)/{workspace,bashhistory,config}"
+	@echo "  - Directories: ./volumes/$(VOLUME_PREFIX)/{workspace,bashhistory,config,claude-auth,docker-data}"
 	@echo "  - Connect with: make shell-agent ID=$(ID)"
 
 stop-agent:
@@ -96,5 +97,5 @@ cleanup-all: cleanup cleanup-volumes
 # Build the base image
 build:
 	@echo "Building Claude Code base image..."
-	@docker compose build
+	@docker build -t claude-code-base:latest .devcontainer/
 	@echo "Base image built successfully!"

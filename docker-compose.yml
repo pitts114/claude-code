@@ -1,10 +1,6 @@
 services:
   claude-agent:
-    build:
-      context: .devcontainer
-      dockerfile: Dockerfile
-      args:
-        TZ: ${TZ:-America/New_York}
+    image: claude-code-base:latest
     container_name: ${INSTANCE_NAME:-claude-code-agent}
     ports:
       - "${EXTERNAL_PORT:-3010}:3000"
@@ -22,6 +18,10 @@ services:
       - ./.devcontainer/.claude/README.md:/home/ubuntu/.claude/README.md:ro
       # Runtime data - isolated per instance
       - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/config:/home/ubuntu/.claude/runtime
+      # Per-instance persistent Claude authentication
+      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/claude-auth:/home/ubuntu/.config/claude
+      # Docker-in-Docker data persistence
+      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/docker-data:/var/lib/docker
     working_dir: /workspace
     user: ubuntu
     environment:
@@ -30,11 +30,14 @@ services:
       - POWERLEVEL9K_DISABLE_GITSTATUS=true
       # GitHub authentication token for Git and CLI (set via .env file or environment)
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # Docker-in-Docker configuration
+      - DOCKER_TLS_CERTDIR=""
     command: bash
     stdin_open: true
     tty: true
     restart: unless-stopped
     network_mode: bridge
+    privileged: true
 
 # Using bind mounts to host directories instead of named volumes
 # Directories are created in ./volumes/${VOLUME_PREFIX}/

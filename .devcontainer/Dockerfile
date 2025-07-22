@@ -54,12 +54,24 @@ RUN apt update && apt install -y less \
   htop \
   tree
 
+# Install Docker CE using official APT repository (secure method)
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl gnupg && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && \
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras uidmap dbus-user-session fuse-overlayfs slirp4netns
+
 # Create ubuntu user with home directory
 RUN useradd -m -s /bin/bash ubuntu
 
 # Ensure default ubuntu user has access to /usr/local/share
 RUN mkdir -p /usr/local/share && \
-  chown -R ubuntu:ubuntu /usr/local/share
+  chown -R ubuntu:ubuntu /usr/local/share && \
+  usermod -aG docker ubuntu
 
 # Persist bash history.
 RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
@@ -82,8 +94,17 @@ RUN ARCH=$(dpkg --print-architecture) && \
   sudo dpkg -i "git-delta_0.18.2_${ARCH}.deb" && \
   rm "git-delta_0.18.2_${ARCH}.deb"
 
+# Rootless docker setup
+RUN mkdir -p /run/user/1000 && chown ubuntu:ubuntu /run/user/1000 && chmod 700 /run/user/1000
+RUN echo 'export "PATH=$HOME/bin:$PATH"' >> /home/ubuntu/.bashrc && \
+  echo 'export "XDG_RUNTIME_DIR=/run/user/1000"' >> /home/ubuntu/.bashrc && \
+  echo 'export "DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock"' >> /home/ubuntu/.bashrc
+
 # Set up non-root user
 USER ubuntu
+
+# Install rootless Docker setup
+RUN dockerd-rootless-setuptool.sh install --skip-iptables --force
 
 # Install rvm and Ruby 3.4.4 (early for better Docker layer caching)
 RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB

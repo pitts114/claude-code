@@ -50,6 +50,22 @@ while read -r cidr; do
     ipset add allowed-domains "$cidr" -exist
 done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 
+# Allow Fastly IPs for Docker Hub registry
+echo "Fetching Fastly CDN IP ranges for Docker Hub..."
+fastly_ips=$(curl -s https://api.fastly.com/public-ip-list | jq -r '.addresses[]')
+for cidr in $fastly_ips; do
+    echo "Adding Fastly IP range $cidr"
+    ipset add allowed-domains "$cidr" -exist
+done
+
+# Also add current A records for registry-1.docker.io
+echo "Resolving registry-1.docker.io for current A records..."
+ips=$(dig +short A registry-1.docker.io)
+for ip in $ips; do
+    echo "Adding registry-1.docker.io A record IP: $ip"
+    ipset add allowed-domains "$ip" -exist
+done
+
 # Resolve and add other allowed domains
 for domain in \
     "registry.npmjs.org" \
@@ -59,7 +75,25 @@ for domain in \
     "statsig.com" \
     "rubygems.org" \
     "index.rubygems.org" \
-    "rubygems.global.ssl.fastly.net"; do
+    "rubygems.global.ssl.fastly.net" \
+    "registry-1.docker.io" \
+    "api.segment.io" \
+    "cdn.segment.com" \
+    "notify.bugsnag.com" \
+    "sessions.bugsnag.com" \
+    "auth.docker.io" \
+    "cdn.auth0.com" \
+    "login.docker.com" \
+    "auth.docker.com" \
+    "desktop.docker.com" \
+    "hub.docker.com" \
+    "registry-1.docker.io" \
+    "production.cloudflare.docker.com" \
+    "docker-images-prod.6aa30f8b08e16409b46e0173d6de2f56.r2.cloudflarestorage.com" \
+    "docker-pinata-support.s3.amazonaws.com" \
+    "api.dso.docker.com" \
+    "api.docker.com" \
+    ; do
     echo "Resolving $domain..."
     ips=$(dig +short A "$domain")
     if [ -z "$ips" ]; then
@@ -87,8 +121,13 @@ fi
 HOST_NETWORK=$(echo "$HOST_IP" | sed "s/\.[0-9]*$/.0\/24/")
 echo "Host network detected as: $HOST_NETWORK"
 
-# Set up remaining iptables rules
+# Allow incoming from host network
 iptables -A INPUT -s "$HOST_NETWORK" -j ACCEPT
+# Allow incoming to published application ports
+iptables -A INPUT -p tcp --dport 3000 -j ACCEPT
+iptables -A INPUT -p tcp --dport 5432 -j ACCEPT
+iptables -A INPUT -p tcp --dport 6379 -j ACCEPT
+# Allow established connections
 iptables -A OUTPUT -d "$HOST_NETWORK" -j ACCEPT
 
 # Set default policies to DROP first
