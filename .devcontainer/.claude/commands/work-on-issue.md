@@ -8,6 +8,9 @@
 
 1. **IMMEDIATELY Create and Checkout Feature Branch**
    ```bash
+   # Pull latest changes from master before creating branch
+   git pull origin master
+   
    # Create and checkout new branch (replace 123, users, profile-validation with actual values)
    git checkout -b feature/issue-123-users-profile-validation
    ```
@@ -181,6 +184,9 @@ Based on issue content and labels, determine affected services:
 Create feature branch for isolated development:
 
 ```bash
+# Pull latest changes from master before creating branch
+git pull origin master
+
 # Create and checkout new branch (replace 123, users, profile-validation with actual values)
 git checkout -b feature/issue-123-users-profile-validation
 
@@ -1021,6 +1027,7 @@ curl -X POST "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/transitions" \
 - [ ] Verify status update succeeded before proceeding
 - [ ] Create and checkout feature branch (replace 123, users, profile-validation with actual values):
   ```bash
+  git pull origin master
   git checkout -b feature/issue-123-users-profile-validation
   ```
 - [ ] Confirm you're on feature branch (not master/main)
