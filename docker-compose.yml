@@ -28,6 +28,9 @@ services:
       - POWERLEVEL9K_DISABLE_GITSTATUS=true
       # GitHub authentication token for Git and CLI (set via .env file or environment)
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # Git configuration (set via .env file or environment)
+      - GIT_USERNAME=${GIT_USERNAME:-pitts114}
+      - GIT_EMAIL=${GIT_EMAIL:-contact@justinpitts.dev}
       # Docker-in-Docker configuration
       - DOCKER_TLS_CERTDIR=""
     command: bash

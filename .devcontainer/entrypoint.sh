@@ -42,6 +42,24 @@ setup_docker_daemon() {
     return 0
 }
 
+# Function to setup Git configuration
+setup_git_config() {
+    echo "🔧 Setting up Git configuration..." >&2
+
+    # Set git username and email if provided
+    if [ -n "$GIT_USERNAME" ]; then
+        git config --global user.name "$GIT_USERNAME"
+        echo "✅ Git username set to: $GIT_USERNAME" >&2
+    fi
+
+    if [ -n "$GIT_EMAIL" ]; then
+        git config --global user.email "$GIT_EMAIL"
+        echo "✅ Git email set to: $GIT_EMAIL" >&2
+    fi
+
+    return 0
+}
+
 # Function to setup GitHub authentication using official GitHub CLI method
 setup_github_auth() {
     echo "🔧 Setting up GitHub authentication..." >&2
@@ -58,6 +76,9 @@ setup_github_auth() {
 
 # Setup Docker daemon
 setup_docker_daemon || echo "⚠️  Docker daemon setup failed, but continuing..." >&2
+
+# Setup Git configuration
+setup_git_config || echo "⚠️  Git configuration setup failed, but continuing..." >&2
 
 # Setup GitHub authentication if token is available
 if [ -n "$GITHUB_TOKEN" ]; then
