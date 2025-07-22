@@ -44,7 +44,7 @@ start-agent:
 	 REDIS_PORT=$(REDIS_PORT) \
 	 INSTANCE_NAME=$(INSTANCE_NAME) \
 	 VOLUME_PREFIX=$(VOLUME_PREFIX) \
-	 docker compose up -d
+	 docker compose -p "claude-agent-$(ID)" up -d
 	@echo "Waiting for container to be ready..."
 	@until docker exec $(INSTANCE_NAME) echo "ready" 2>/dev/null; do sleep 1; done
 	@echo "Initializing firewall for Agent $(ID)..."
@@ -64,7 +64,7 @@ stop-agent:
 	 REDIS_PORT=$(REDIS_PORT) \
 	 INSTANCE_NAME=$(INSTANCE_NAME) \
 	 VOLUME_PREFIX=$(VOLUME_PREFIX) \
-	 docker compose down
+	 docker compose -p "claude-agent-$(ID)" down
 	@echo "Agent $(ID) stopped successfully!"
 
 shell-agent:
