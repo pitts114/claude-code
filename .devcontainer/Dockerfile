@@ -128,6 +128,9 @@ COPY --from=ruby-builder /etc/profile.d/rvm.sh /etc/profile.d/rvm.sh
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> ~/.bashrc && \
     echo 'export PATH="$PATH:/usr/local/rvm/bin"' >> ~/.bashrc
 
+# Configure bundler to install gems in vendor/bundle
+RUN /bin/bash -l -c "source /usr/local/rvm/scripts/rvm && bundle config set --global path 'vendor/bundle'"
+
 # Configure bash with better prompt and colors
 RUN echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> ~/.bashrc && \
   echo 'alias ls="ls --color=auto"' >> ~/.bashrc && \
