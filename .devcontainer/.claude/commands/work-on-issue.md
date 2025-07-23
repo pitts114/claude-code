@@ -88,6 +88,11 @@ gh project item-edit --project-id PVT_kwHOATGsKs4A-OnP --id PVTI_lAHOATGsKs4A-On
 
 ### 1. Issue Analysis Phase
 - Fetch issue details using `gh issue view #123 --json title,body,labels,assignees,milestone,projectItems`
+- **Assign Yourself to the Issue:**
+  ```bash
+  # Assign yourself to the issue (replace 123 with actual issue number)
+  gh issue edit 123 --assignee @me
+  ```
 - **Detect Project Management Tool:**
   - Check for GitHub Projects v2 in `projectItems`
   - Look for Linear issue URL patterns in body/comments
@@ -496,27 +501,27 @@ fi
   # Step 1: Review commit history to understand what was implemented
   git log --oneline feature/issue-123-users-profile-validation
 
-  # Step 2: Create PR with simple, clear title (examples below)
+  # Step 2: Create PR with simple, clear title and assign yourself (examples below)
   # Instead of: "feat(users): add profile validation for issue #123"
   # Use simple titles like:
 
   # For user profile features:
-  gh pr create --title "Create UserProfile model" --body "Closes #123"
+  gh pr create --title "Create UserProfile model" --body "Closes #123" --assignee @me
 
   # For authentication features:
-  gh pr create --title "Add JWT refresh tokens" --body "Closes #124"
+  gh pr create --title "Add JWT refresh tokens" --body "Closes #124" --assignee @me
 
   # For notification features:
-  gh pr create --title "Add notification preferences" --body "Closes #125"
+  gh pr create --title "Add notification preferences" --body "Closes #125" --assignee @me
 
   # For bug fixes:
-  gh pr create --title "Fix user session persistence" --body "Closes #126"
+  gh pr create --title "Fix user session persistence" --body "Closes #126" --assignee @me
 
   # For performance improvements:
-  gh pr create --title "Optimize user profile queries" --body "Closes #127"
+  gh pr create --title "Optimize user profile queries" --body "Closes #127" --assignee @me
 
   # For UI/UX changes:
-  gh pr create --title "Redesign settings page" --body "Closes #128"
+  gh pr create --title "Redesign settings page" --body "Closes #128" --assignee @me
   ```
 
 #### PR Title Guidelines
@@ -1009,7 +1014,12 @@ curl -X POST "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/transitions" \
 **YOU MUST COMPLETE THESE STEPS FOR EVERY ISSUE:**
 
 ### Phase 1: Setup (REQUIRED)
-- [ ] **FIRST**: Update issue status to "In Progress" on ALL projects (replace 123 with actual issue number):
+- [ ] **FIRST**: Assign yourself to the issue (replace 123 with actual issue number):
+  ```bash
+  # Assign yourself to the issue
+  gh issue edit 123 --assignee @me
+  ```
+- [ ] **SECOND**: Update issue status to "In Progress" on ALL projects (replace 123 with actual issue number):
   ```bash
   # Step 1: Discover which projects this issue belongs to
   gh issue view 123 --repo pitts114/microservices-demo --json projectItems
@@ -1045,7 +1055,7 @@ curl -X POST "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/transitions" \
 - [ ] Code follows project conventions
 - [ ] All commits are properly formatted
 - [ ] Push feature branch to remote
-- [ ] Create pull request with descriptive title that explains what the changes do
+- [ ] Create pull request with descriptive title that explains what the changes do and assign yourself
 - [ ] Use proper PR template with detailed change summary
 
 ### Phase 4: Verification (REQUIRED)
