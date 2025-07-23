@@ -32,6 +32,7 @@ services:
       - GIT_EMAIL=${GIT_EMAIL:-contact@justinpitts.dev}
       # Docker-in-Docker configuration
       - DOCKER_TLS_CERTDIR=""
+      - TZ=America/New_York
     command: bash
     stdin_open: true
     tty: true
