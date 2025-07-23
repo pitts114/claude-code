@@ -74,6 +74,7 @@ setup_github_auth() {
     return 0
 }
 
+
 # Setup Docker daemon
 setup_docker_daemon || echo "⚠️  Docker daemon setup failed, but continuing..." >&2
 
@@ -86,6 +87,7 @@ if [ -n "$GITHUB_TOKEN" ]; then
 else
     echo "ℹ️  GITHUB_TOKEN not set, skipping GitHub authentication setup" >&2
 fi
+
 
 # Execute the main command
 exec "$@"

@@ -1,11 +1,15 @@
 # Ruby build stage - pre-compile Ruby with RVM for faster builds
-FROM ruby:3.4 as ruby-builder
+FROM ruby:3.4 AS ruby-builder
 
 # Install RVM and Ruby 3.4.4 in the Ruby image
 RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 RUN curl -sSL https://get.rvm.io | bash -s stable
 RUN /bin/bash -l -c "source /etc/profile.d/rvm.sh && rvm install 3.4.4 && rvm use 3.4.4 --default"
 RUN /bin/bash -l -c "source /etc/profile.d/rvm.sh && gem install bundler rails"
+
+# Install python3 and uv
+FROM python:3.12-slim-bookworm
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Main Ubuntu build stage
 FROM ubuntu:22.04
@@ -124,6 +128,9 @@ RUN dockerd-rootless-setuptool.sh install --skip-iptables --force
 COPY --from=ruby-builder /usr/local/rvm /usr/local/rvm
 COPY --from=ruby-builder /etc/profile.d/rvm.sh /etc/profile.d/rvm.sh
 
+# Copy uv from python build stage
+COPY --from=1 /bin/uv /bin/uvx /usr/local/bin/
+
 # Set up RVM for ubuntu user
 RUN echo 'source /usr/local/rvm/scripts/rvm' >> ~/.bashrc && \
     echo 'export PATH="$PATH:/usr/local/rvm/bin"' >> ~/.bashrc
@@ -151,8 +158,18 @@ RUN /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 18.20.8 && nvm use 18.20.8
 # Install global npm packages (following Anthropic pattern)
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && npm install -g @anthropic-ai/claude-code yarn"
 
-# Install uv (Python package manager) for SuperClaude
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install SuperClaude
+RUN uv tool install SuperClaude
+RUN echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+RUN /bin/bash -c "source ~/.nvm/nvm.sh && export PATH=\"$HOME/.local/bin:$HOME/.nvm/versions/node/v18.20.8/bin:$PATH\" && SuperClaude install --profile developer -y"
+
+# Copy project's claude files after SuperClaude installation (preserve SuperClaude installation)
+COPY .claude/README.md /home/ubuntu/.claude/README.md
+COPY .claude/commands/ /home/ubuntu/.claude/commands/
+
+# Create empty authentication files for volume mounting
+RUN echo '{}' > /home/ubuntu/.claude/.credentials.json
+RUN echo '{}' > /home/ubuntu/.claude/.claude.json
 
 # Configure Git basic settings (authentication handled by gh auth setup-git)
 RUN git config --global init.defaultBranch main
@@ -168,6 +185,9 @@ RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh && \
 
 # Note: .claude configuration is now mounted as volumes in docker-compose.yml
 # This provides live updates and proper separation of commands vs runtime data
+
+COPY .claude/commands /home/ubuntu/.claude/commands
+COPY .claude/README.md /home/ubuntu/.claude/README
 
 # Set entrypoint for runtime GitHub authentication
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
