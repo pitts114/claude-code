@@ -35,6 +35,10 @@ RUN apt update && apt install -y less \
   lsb-release \
   software-properties-common \
   netcat \
+  # Python for SuperClaude
+  python3 \
+  python3-pip \
+  python3-venv \
   # Ruby build dependencies
   build-essential \
   ruby-build \
@@ -143,6 +147,9 @@ RUN /bin/bash -c "source ~/.nvm/nvm.sh && nvm install 18.20.8 && nvm use 18.20.8
 
 # Install global npm packages (following Anthropic pattern)
 RUN /bin/bash -c "source ~/.nvm/nvm.sh && npm install -g @anthropic-ai/claude-code yarn"
+
+# Install uv (Python package manager) for SuperClaude
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Configure Git basic settings (authentication handled by gh auth setup-git)
 RUN git config --global init.defaultBranch main
