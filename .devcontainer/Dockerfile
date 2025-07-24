@@ -170,6 +170,7 @@ COPY .claude/commands/ /home/ubuntu/.claude/commands/
 # Create empty authentication files for volume mounting
 RUN echo '{}' > /home/ubuntu/.claude/.credentials.json
 RUN echo '{}' > /home/ubuntu/.claude/.claude.json
+RUN echo '{}' > /home/ubuntu/.claude/settings.json
 
 # Configure Git basic settings (authentication handled by gh auth setup-git)
 RUN git config --global init.defaultBranch main

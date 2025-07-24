@@ -18,6 +18,7 @@ services:
       # Shared Claude authentication files
       - ./volumes/claude-auth/.credentials.json:/home/ubuntu/.claude/.credentials.json
       - ./volumes/claude-auth/.claude.json:/home/ubuntu/.claude/.claude.json
+      - ./volumes/claude-auth/settings.json:/home/ubuntu/.claude/settings.json
       # - ./volumes/claude:/home/ubuntu/.claude
     working_dir: /workspace
     user: ubuntu
