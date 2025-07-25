@@ -10,16 +10,12 @@ services:
       - NET_ADMIN
       - NET_RAW
     volumes:
-      # Isolated bind mounts per instance
-      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/workspace:/workspace
-      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/bashhistory:/commandhistory
-      # Runtime data - isolated per instance
-      - ./volumes/${VOLUME_PREFIX:-claude-code-agent}/config:/home/ubuntu/.claude/runtime
-      # Shared Claude authentication files
-      - ./volumes/claude-auth/.credentials.json:/home/ubuntu/.claude/.credentials.json
-      - ./volumes/claude-auth/.claude.json:/home/ubuntu/.claude/.claude.json
-      - ./volumes/claude-auth/settings.json:/home/ubuntu/.claude/settings.json
-      # - ./volumes/claude:/home/ubuntu/.claude
+      # Bind mounts to configurable remote path
+      - ${REMOTE_VOLUMES_PATH:-/home/ubuntu/claude-volumes}/${VOLUME_PREFIX:-claude-code-agent}/workspace:/workspace
+      - ${REMOTE_VOLUMES_PATH:-/home/ubuntu/claude-volumes}/${VOLUME_PREFIX:-claude-code-agent}/bashhistory:/commandhistory
+      - ${REMOTE_VOLUMES_PATH:-/home/ubuntu/claude-volumes}/${VOLUME_PREFIX:-claude-code-agent}/config:/home/ubuntu/.claude/runtime
+      # Shared Claude authentication directory
+      - ${REMOTE_VOLUMES_PATH:-/home/ubuntu/claude-volumes}/claude-auth:/home/ubuntu/.claude/shared:ro
     working_dir: /workspace
     user: ubuntu
     environment:
@@ -40,3 +36,5 @@ services:
     restart: unless-stopped
     network_mode: bridge
     privileged: true
+
+# No volumes section needed - using bind mounts
