@@ -1,4 +1,5 @@
 volumes/
 .env
 .env.*
+makefile.env
 .DS_Store

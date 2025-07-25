@@ -1,4 +1,7 @@
-.PHONY: start-agent stop-agent shell-agent logs-agent list-agents cleanup help
+.PHONY: start-agent stop-agent shell-agent shell-root-agent logs-agent list-agents cleanup cleanup-volumes cleanup-all build docker-build docker-push help
+
+# Include docker-related targets
+include docker.mk
 
 # Default agent ID if not provided
 ID ?= 1
@@ -107,8 +110,3 @@ cleanup-volumes:
 cleanup-all: cleanup cleanup-volumes
 	@echo "Full cleanup (containers and directories) completed!"
 
-# Build the base image
-build:
-	@echo "Building Claude Code base image..."
-	@docker build -t claude-code-base:latest .devcontainer/
-	@echo "Base image built successfully!"
